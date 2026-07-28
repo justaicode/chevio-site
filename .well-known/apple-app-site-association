@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["85LHNZC32T.com.robertozanon.macrolog"],
+        "components": [
+          { "/": "/r/*", "comment": "Shared recipes open in Chevio" },
+          { "/": "/r", "comment": "Shared recipe with the id in the query string" }
+        ]
+      }
+    ]
+  }
+}
