@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join a shopping list · Chevio</title>
+<meta name="robots" content="noindex">
+<style>
+  :root { --bg:#F5F4F7; --card:#FFF; --ink:#1B1726; --muted:#7B7589; --p:#8671CB; --pd:#6B54B0; --ps:#ECE9F6; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:var(--bg); color:var(--ink); display:grid; place-items:center; padding:24px;
+         font-family:ui-sans-serif,-apple-system,"Segoe UI",system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  .card { background:var(--card); border-radius:26px; padding:34px 28px; max-width:400px; width:100%; text-align:center;
+          box-shadow:0 18px 44px rgba(27,23,38,.10); }
+  .ic { width:70px; height:70px; border-radius:23px; background:var(--ps); display:grid; place-items:center; margin:0 auto 18px; }
+  h1 { font-size:25px; line-height:1.2; letter-spacing:-.02em; margin:0 0 10px; font-weight:800; }
+  p { color:var(--muted); font-size:15px; line-height:1.55; margin:0 0 22px; }
+  .cta { display:flex; align-items:center; justify-content:center; gap:9px; background:var(--p); color:#fff;
+         text-decoration:none; font-weight:800; font-size:16px; border-radius:15px; padding:16px; }
+  .cta:active { opacity:.85; }
+  .fine { font-size:12.5px; color:var(--muted); margin:16px 0 0; }
+  .code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:var(--ps); color:var(--pd);
+          border-radius:8px; padding:3px 8px; font-size:13px; }
+  .brand { margin-top:26px; font-size:12px; color:var(--muted); letter-spacing:.04em; }
+  .brand a { color:var(--pd); text-decoration:none; font-weight:700; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="ic">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#8671CB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2.5 3.5h2.2l2.4 10.4a1.8 1.8 0 0 0 1.8 1.4h7.7a1.8 1.8 0 0 0 1.8-1.4l1.4-6.2H6"/>
+        <circle cx="9.5" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/>
+      </svg>
+    </div>
+    <h1>Someone shared a shopping list with you</h1>
+    <p>Open it in Chevio and you'll both see the same list — anything either of you adds or ticks off shows up on the other phone straight away.</p>
+    <a class="cta" href="#" id="open">Open in Chevio <span>&rsaquo;</span></a>
+    <p class="fine" id="fine"></p>
+    <p class="brand"><a href="/">chevio.app</a></p>
+  </div>
+
+<script>
+  // The invite is only an invite: the list itself is private, readable solely by
+  // its members through row-level security. This page never sees its contents —
+  // it exists to hand the code to the app.
+  var APP_STORE_URL = "https://apps.apple.com/app/chevio/id0000000000"; // TODO: real id once the app is live
+
+  function idOf() {
+    var m = /[?&]id=([A-Za-z0-9]+)/.exec(location.search) || /\/l\/([A-Za-z0-9]+)/.exec(location.pathname);
+    return m ? m[1] : "";
+  }
+
+  // Universal links need an Associated Domains entitlement the app doesn't have
+  // yet, so try the custom scheme: if Chevio is installed the OS switches to it
+  // and this page is backgrounded before the timer runs. Otherwise we're still
+  // here, and the App Store is the right destination.
+  function openInApp(id) {
+    if (!id) return;
+    var started = Date.now();
+    var timer = setTimeout(function () {
+      if (document.hidden) return;
+      if (Date.now() - started < 2500) location.href = APP_STORE_URL;
+    }, 1400);
+    document.addEventListener("visibilitychange", function () { if (document.hidden) clearTimeout(timer); }, { once: true });
+    location.href = "chefmind://list/" + encodeURIComponent(id);
+  }
+
+  var id = idOf();
+  document.getElementById("fine").innerHTML = id
+    ? 'Invite code <span class="code">' + id + '</span> — you can also type this into Chevio.'
+    : "This link is missing its invite code. Ask for it again.";
+  document.getElementById("open").addEventListener("click", function (e) { e.preventDefault(); openInApp(id); });
+</script>
+</body>
+</html>
