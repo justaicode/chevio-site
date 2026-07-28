@@ -71,6 +71,21 @@ const SUPABASE_URL = "https://qkijkztyrdibcpdgpivi.supabase.co";
 const SUPABASE_KEY = "sb_publishable_4_OWSchpJbtgbc9ef0Na0g_la7h0Fxo";
 
 const APP_STORE_URL = "https://apps.apple.com/app/chevio/id0000000000"; // TODO: real id once the app is live
+
+// Until universal links are live (they need an Associated Domains entitlement in
+// the app), try the custom scheme first: if Chevio is installed the OS switches
+// to it and this page is backgrounded, so the timer below never gets to run. If
+// nothing handles the scheme we're still here a moment later — send them to the
+// App Store instead.
+function openInApp(id) {
+  const started = Date.now();
+  const timer = setTimeout(() => {
+    if (document.hidden) return;              // the app took over — leave it alone
+    if (Date.now() - started < 2500) location.href = APP_STORE_URL;
+  }, 1400);
+  document.addEventListener("visibilitychange", () => { if (document.hidden) clearTimeout(timer); }, { once: true });
+  location.href = "chefmind://recipe/" + encodeURIComponent(id);
+}
 const root = document.getElementById("root");
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 const idOf = () => new URLSearchParams(location.search).get("id") || location.hash.replace(/^#/, "");
@@ -130,11 +145,13 @@ function render(r) {
       "</div></div>" : "") +
     (ings ? '<div class="card"><h2>Ingredients</h2><ul class="ing">' + ings + "</ul></div>" : "") +
     (steps ? '<div class="card"><h2>Method</h2><ol class="steps">' + steps + "</ol></div>" : "") +
-    '<a class="cta" href="' + APP_STORE_URL + '"><span>' + "" + "</span><span><b>Open in Chevio</b>" +
-      "<span>Free on the App Store</span></span><span class=\"arw\">&rsaquo;</span></a>" +
+    '<a class="cta" href="#" id="openApp"><span>' + "" + "</span><span><b>Open in Chevio</b>" +
+      "<span>Have the app? It opens there \u2014 otherwise get it free</span></span><span class=\"arw\">&rsaquo;</span></a>" +
     '<p class="note">Chevio counts the food you cook \u2014 add this recipe and it logs in one tap.</p>';
 
   document.title = (r.title || "Recipe") + " — shared via Chevio";
+  const cta = document.getElementById("openApp");
+  if (cta) cta.addEventListener("click", (e) => { e.preventDefault(); openInApp(idOf()); });
 }
 
 function fail(title, body) {
